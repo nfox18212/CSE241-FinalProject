@@ -1,0 +1,82 @@
+$date
+	Tue May  9 17:18:04 2023
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module testtb $end
+$var wire 4 ! out_tb [3:0] $end
+$var reg 4 " arr_tb [3:0] $end
+$scope module tb $end
+$var wire 4 # arr [3:0] $end
+$var reg 4 $ out [3:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b111 $
+b111 #
+b111 "
+b111 !
+$end
+#1
+b1111 !
+b1111 $
+#2
+b111 !
+b111 $
+#3
+b1111 !
+b1111 $
+#4
+b111 !
+b111 $
+#5
+b1111 !
+b1111 $
+#6
+b111 !
+b111 $
+#7
+b1111 !
+b1111 $
+#8
+b111 !
+b111 $
+#9
+b1111 !
+b1111 $
+#10
+b111 !
+b111 $
+#11
+b1111 !
+b1111 $
+#12
+b111 !
+b111 $
+#13
+b1111 !
+b1111 $
+#14
+b111 !
+b111 $
+#15
+b1111 !
+b1111 $
+#16
+b111 !
+b111 $
+#17
+b1111 !
+b1111 $
+#18
+b111 !
+b111 $
