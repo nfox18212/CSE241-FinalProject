@@ -93,7 +93,7 @@
     end
 
 
-    dflipflop dff1(ffin[0],CLK, state[0]);
+    dflipflop dff1(ffin[0], CLK, state[0]);
     dflipflop dff2(ffin[1], CLK, state[1]);
     dflipflop dff3(ffin[2], CLK, state[2]);
 
