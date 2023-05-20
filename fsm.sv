@@ -37,60 +37,32 @@
   `define B state[1]
   `define C state[2]
   `define D SECI
-  `define E 1BUT
-  `define F 0BUT
-  `define nodec 1
+  `define E OBUT
+  `define F ZBUT
 
-  `ifdef nodec
-    `define DIG0 'b000
-    `define DIG1 'b001
-    `define DIG2 'b011
-    `define DIG3 'b010
-    `define SECV 'b010
-    `define RSTS 'b011
-    `define _OFF 'b111
-    `define OPEN 'b110
-`endif
 
-  module keypad(0BUT, 1BUT, SECI, ENBL, SECV, RSTO, LOCK, ULCK, CLK);
+  module keypad(ZBUT, OBUT, SECI, ENBL, SECV, RSTO, LOCK, ULCK, CLK, offin, ostate);
 
-    input 0BUT, 1BUT, SECI, ENBL, CLK;
-    output RSTO, LOCK, ULCK, SECV;
+    input ZBUT, OBUT, SECI, ENBL, CLK;
+    output wire RSTO, LOCK, ULCK, SECV;
 
     /* Variable that represents the three digits of our state */
+    // wire [2:0] state;
     wire [2:0] state;
 
-    /* These variables represent our current state, and are the result of taking the 
-     * three output bits from the D flip-flops and are piped through to a 3 to 8 decoder.
-     * As such, only one of these variables will ever be 1 at a time, and the one that is on will be our state. */
-     
-  //  reg DIG0, DIG1, DIG2, DIG3, SECV, RSTS, _OFF, OPEN;
+    // purely for debugging purposes
+    output wire [2:0] ostate;
+    assign ostate[0] = state[0];
+    assign ostate[1] = state[1];
+    assign ostate[2] = state[2];
 
-    /* This variable will be passed into the flip-flop, and are the output of the combinational logic equations that
-    *  essentially determine what state we are going to go into next.  */
+    output wire [2:0] offin;
+    assign offin = ffin;
+
+    /* This variable will be passed into the flip-flop, and are the output of the combinational 
+    * logic equations that essentially determine what state we are going to go into next.  */
    
     wire [2:0] ffin;
-
-  initial
-    begin
-      /* default state of the system assumes that ENBL is 1, and SECI is 0, so a normal operating state. 
-      *  As a result, */
-      RSTO = 0;
-      LOCK = 1;
-      ULCK = 0;
-      SECV = 0;
-
-      `ifndef nodec
-      // keypad starts in the DIG0 state
-      // DIG0 = 1; DIG1 = 0; DIG2 = 0; DIG3 = 0; SECV = 0; RSTS = 0; _OFF = 0;  OPEN = 0;
-      `endif
-      // // initialize the combonational logic vars to the DIG0 state, which will be 000
-      // ffin = 'b000;
-
-      // // the initial state will be 000 or DIG0
-      // state = 'b000;
-
-    end
 
 
     dflipflop dff1(ffin[0], CLK, state[0]);
@@ -99,74 +71,17 @@
 
 
     // ffin1 = D+ AC’ + AB + C’E’F + BEF’ + A’CEF’
-    // A = state[0], B = state[1], C = state[2], D = SECI, E = 1BUT, F = 0BUT
-    // SECI + state[0] * state[2]' + state[2]' * 1BUT' * 0BUT + state[1] * 1BUT * 0BUT' + state[0]' * state[2] * 1BUT * 0BUT'
-    // see defines at start of fil
     // first digit of new state
-    assign ffin[0] = D | (A & ~C) | (A & B) | ((~C) & (~E) & F) | (B & E & (~F)) | ((~A) & C & E & (~F));
+    assign ffin[0] = `D | (`A & ~`C) | (`A & `B) | ((~`C) & (~`E) & `F) | (`B & `E & (~`F)) | ((~`A) & `C & `E & (~`F));
     // ffin2 = BE’ + BF + CE’F
-    assign ffin[1] = (B & (~E)) | (B & F) | (C & E & (~F));
+    assign ffin[1] = (`B & (~`E)) | (`B & `F) | (`C & `E & (~`F));
     // ffin3 = AC'D' + ABD' + A'CD'F' + A'CD'E + BD'EF' + A’B’D’E’F
-    assign ffin[2] = (A & (~C) & (~D)) + (A & B & (~D)) | ((~A) & C & (~D) & (~F)) | ((~A) & C & (~D) & E) | (B & (~D) & E & (~F)) | ((~A) & (~B) & (~C) & (~E) & F);
+    assign ffin[2] = (`A & (~`C) & (~`D)) + (`A & `B & (~`D)) | ((~`A) & `C & (~`D) & (~`F)) | ((~`A) & `C & (~`D) & `E) | (`B & (~`D) & `E & (~`F)) | ((~`A) & (~`B) & (~`C) & (~`E) & `F);
 
-
-    
-    `ifndef nodec
-     decoder3to8 decoder(state[0], state[1], state[2], DIG0, DIG1, DIG2, DIG3, SECV, RSTS, _OFF, OPEN);
-    `endif
-    always_ff@(posedge CLK)
-      begin
-        #1
-        if(ENBL == 0) // If ENBL is low, system shuts down
-          begin
-            RSTO = 0;
-            LOCK = 0;
-            ULCK = 0;
-            SECV = 0;
-            // system goes into _OFF state, represented by 111
-            state = 'b111;
-          end
-
-        else 
-          begin
-
-            `ifdef nodec
-            // change the outputs based on our state
-            case(state)
-            `DIG0, `DIG1, `DIG2, `DIG3 : begin
-              SECV = 0;
-              RSTO = 0;
-              LOCK = 1;
-              ULCK = 0;
-            end
-            `RSTS : begin
-              
-              LOCK = 1;
-              ULCK = 0;
-              SECV = 0;
-              RSTO = 1;
-
-            end
-
-            `SECV : begin
-              SECV = 1;
-              ULCK = 0;
-              LCK = 1;
-              RSTO = 0;
-            end
-
-            `OPEN : begin
-              SECV = 0;
-              ULCK = 1;
-              LOCK = 0;
-              RSTO = 0;
-            end
-
-            default: $display("Invalid state");
-            endcase 
-            `endif
-          end
-
-      end
+    // continuous assignment was the least painful, all equations are derived on spreadsheet
+    assign LOCK = (~`B) | (~`A);
+    assign ULCK = `A & `B & (~`C);
+    assign RSTO = `A & (~`B) & `C;
+    assign SECV = `A & (~`B) & (~`C);
 
   endmodule

@@ -1,5 +1,5 @@
 $date
-	Fri May 19 13:07:54 2023
+	Fri May 19 14:17:47 2023
 $end
 $version
 	Icarus Verilog
@@ -10,9 +10,10 @@ $end
 $scope module testtb $end
 $var wire 4 ! out_tb [3:0] $end
 $var reg 4 " arr_tb [3:0] $end
+$var integer 32 # i [31:0] $end
 $scope module tb $end
-$var wire 4 # arr [3:0] $end
-$var reg 4 $ out [3:0] $end
+$var wire 4 $ arr [3:0] $end
+$var reg 4 % out [3:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
@@ -21,59 +22,77 @@ $dumpall
 $end
 #1
 $dumpvars
-b0 $
-b111 #
+b0 %
+b111 $
+b1 #
 b111 "
 b0 !
 $end
 #2
+b10 #
 b111 !
-b111 $
+b111 %
 #3
+b11 #
 b0 !
-b0 $
+b0 %
 #4
+b100 #
 b111 !
-b111 $
+b111 %
 #5
+b101 #
 b0 !
-b0 $
+b0 %
 #6
+b110 #
 b111 !
-b111 $
+b111 %
 #7
+b111 #
 b0 !
-b0 $
+b0 %
 #8
+b1000 #
 b111 !
-b111 $
+b111 %
 #9
+b1001 #
 b0 !
-b0 $
+b0 %
 #10
+b1010 #
 b111 !
-b111 $
+b111 %
 #11
+b1011 #
 b0 !
-b0 $
+b0 %
 #12
+b1100 #
 b111 !
-b111 $
+b111 %
 #13
+b1101 #
 b0 !
-b0 $
+b0 %
 #14
+b1110 #
 b111 !
-b111 $
+b111 %
 #15
+b1111 #
 b0 !
-b0 $
+b0 %
 #16
+b10000 #
 b111 !
-b111 $
+b111 %
 #17
+b10001 #
 b0 !
-b0 $
+b0 %
 #18
+b10010 #
 b1000 !
-b1000 $
+b1000 %
