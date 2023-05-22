@@ -13,18 +13,19 @@
   *   providing a clock signal to the keypad.  
   */
 //  `define nott
-// `define print
-`define nodump
+`define print
+// `define nodump
+// `define dbg // enable this macro for debugging output
+`define tick #1 clk = ~clk;
+
+`timescale 1ms/1ms
 
 module fsmtb;
   reg zbuttb, obuttb, secitb, enbltb;
   reg clk;
   wire reset, seled, locked, unlocked;
   wire [2:0] fftb, ostatetb;
-  reg  [2:0] dispstr;
-  int testno;
 
-  // keypad fsm(zbuttb, zbuttb, secitb, enbltb,  reset, locked, unlocked, clk);
     keypad fsm(.ZBUT(zbuttb),
             .OBUT(obuttb),
             .ENBL(enbltb),
@@ -32,10 +33,13 @@ module fsmtb;
             .RSTO(reset),
             .LOCK(locked),
             .ULCK(unlocked),
-            .SECV(secvled),
-            .CLK(clk),
+            .SECO(secvled),
+            .CLK(clk)
+            `ifdef dbg
+            , // yes i know this syntax is atrocious, and that i'm abusing define macros, but it works and it makes it easy to go from debugging mode to release mode
             .ostate(ostatetb),
             .offin(fftb)
+            `endif
           );
 
   
@@ -47,87 +51,86 @@ module fsmtb;
 
       `ifndef nott
       // setup output display
-      $display("obuttb zbuttb  seci   enbl\tclk |  lock\tulck\tsecv\trsto\tostatetb  fftb");
-      $monitor("%d \t %d \t %d \t %d \t %d  |  %d\t%d\t%d\t  %d\t %d%d%d\t  %d%d%d",obuttb, zbuttb, secitb, enbltb, clk, locked, unlocked, secvled, reset, ostatetb[0], ostatetb[1], ostatetb[2], fftb[0], fftb[1], fftb[2]);
+      `ifdef dbg
+      $display("seci   obuttb zbuttb  enbl\tclk |  lock\tulck\tseco\trsto\tostatetb  fftb");
+      $monitor("%d \t %d \t %d \t %d \t %d  |  %d\t%d\t%d\t  %d\t %d%d%d\t  %d%d%d", secitb, obuttb, zbuttb, enbltb, clk, locked, unlocked, secvled, reset, ostatetb[0], ostatetb[1], ostatetb[2], fftb[0], fftb[1], fftb[2]);
+      `else
+      $display("seci  obuttb zbuttb   enbl\tclk |  lock\tulck\tseco\trsto");
+      $monitor("%d \t %d \t %d \t %d \t %d  |  %d\t%d\t%d\t  %d\t", secitb ,obuttb, zbuttb, enbltb, clk, locked, unlocked, secvled, reset);
       `endif
+      `endif
+      
 
       `ifndef nodump
       // setup wave output
-      $dumpfile("fsmtb.vcd");
+      $dumpfile("fsmtb.lxt");
       $dumpvars;
       `endif
 
-      // test no changes which test we run in the always block
-      testno = 0;
-
       // stop simulation
-      #30 $finish;
+      #100 $finish;
     end
 
   always 
     begin
-      if(testno <= 1)
-        begin
-          // esnure clock is 0
-          clk = 0;
-          // start with attempting to enter a correct combination, so 1000 - set obuttb to 1
-          obuttb = 1;
-          // read with clock
-          #1 clk = 1;
-          #1 clk = 0;
-          #1 clk = 1;
-          // change button inputs so that obuttb is pressed instead
-          obuttb = 0; zbuttb = 1;
-          #1 clk = 0;
-          #1 clk = 1;
-          // one zero read
-          #1 clk = 0;
-          #1 clk = 1;
-          // two zeroes read
-          #1 clk = 0;
-          #1 clk = 1;
-          // three zeroes read, should be unlocked
+        `tick; obuttb = 1; enbltb = 1; secitb = 0;
+        `tick; 
+        `tick; obuttb = 0;
+        `tick; 
+        `tick;
+        `tick; zbuttb = 1;
+        `tick; 
+        `tick; 
+        `tick;
+        `tick;
+        `tick; zbuttb = 0;
+        `tick;
+        `tick; enbltb = 0;
+        `tick;
+        `tick;
+        `tick; enbltb = 1;
+        `tick;
+        `tick;
+        `tick; secitb = 1;
+        `tick;
+        `tick;
+        `tick;
+        `tick;
+        `tick; secitb = 0;
+        `tick;
+        `tick; 
+        `tick;
+        `tick; obuttb = 1;
+        `tick; 
+        `tick; obuttb = 0;
+        `tick; 
+        `tick;
+        `tick; zbuttb = 1;
+        `tick; 
+        `tick;
+        `tick; zbuttb = 0;
+        `tick;
+        `tick;
+        `tick;
+        `tick; zbuttb = 1; obuttb = 1;
+        `tick;
+        `tick;
+        `tick;
+        `tick; zbuttb = 0;
+        `tick;
+        `tick;
+        `tick; secitb = 1;
+        `tick;
+        `tick;
+        `tick; 
+        `tick; enbltb = 0;
+        `tick; enbltb = 1;
+        `tick; enbltb = 0;
+        `tick;
+        `tick; 
+        `tick;
 
-          `ifdef print
-          if (unlocked == 1 && locked == 0)
-            begin
-              $display("Safe unlocked properly");
-            end
-          else
-            begin
-              $display("Safe did not unlock properly");
-            end
-          `endif
-          zbuttb = 0; obuttb = 0; testno += 1;
-        end
-      else if (testno > 1 && testno <= 3)
-        begin
-          
-          // see if the system will correctly reset when a bad pattern is put in
-          #1 clk = 0;
-          #1 obuttb = 1; zbuttb = 0; // 1
-          #1 clk = ~clk; // 1
-          #1 clk = ~clk; // 0
-          #1 obuttb = 0; zbuttb = 1;
-          #1 clk = ~clk; // 1
-          #1 clk = ~clk; // 0
-          #1 clk = ~clk; // 1 - system read in 100, pass in 1
-          #1 clk = ~clk; // 0
-          #1 obuttb = 1; zbuttb = 0;
-          #1 clk = ~clk; // 1 - system has read in 1001, determine state
 
-          `ifdef print
-          if (reset == 1)
-            begin
-              $display("Keypad correctly reset");
-            end
-          else 
-            begin
-              $display("Keypad did not reset");
-            end
-          `endif
-          obuttb = 0; zbuttb = 0; testno += 1;
-        end
       end
     
 

@@ -18,18 +18,19 @@
 
 module dflipflop(D, CLK, Q);
 
-  input D, CLK;
-  output Q; reg Q;
+  input reg D, CLK;
+  output reg Q;
   
   initial
     begin
-      Q = 0;
+        Q = 0;
     end
 
   always@(posedge CLK)
     begin
-      Q = D;
+        Q <= D;
     end
+
 
 
 endmodule
